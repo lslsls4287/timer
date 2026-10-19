@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>뽀모도로 타이머 (Pomodoro Timer)</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">🍅</span>
+        <span class="logo-text">뽀모타이머</span>
+      </div>
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="icon-btn" title="테마 변경">
+          <span class="theme-icon">🌙</span>
+        </button>
+        <button id="settingsBtn" class="icon-btn" title="설정">
+          ⚙️
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Timer Card -->
+    <main class="timer-card">
+      <!-- Mode Tabs -->
+      <nav class="mode-tabs">
+        <button class="tab-btn active" data-mode="pomodoro">집중 (25분)</button>
+        <button class="tab-btn" data-mode="shortBreak">짧은 휴식 (5분)</button>
+        <button class="tab-btn" data-mode="longBreak">긴 휴식 (15분)</button>
+      </nav>
+
+      <!-- Circular Timer Display -->
+      <div class="timer-circle-container">
+        <svg class="progress-ring" viewBox="0 0 320 320">
+          <circle class="progress-ring__circle-bg" cx="160" cy="160" r="140" />
+          <circle class="progress-ring__circle" id="progressCircle" cx="160" cy="160" r="140" />
+        </svg>
+        <div class="timer-display">
+          <div class="time-text" id="timeDisplay">25:00</div>
+          <div class="session-status" id="sessionStatus">집중할 시간입니다! 🔥</div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="timer-controls">
+        <button id="startPauseBtn" class="control-btn primary-btn">시작</button>
+        <button id="skipBtn" class="control-btn secondary-btn" title="다음 세션으로 건너뛰기">건너뛰기 ⏩</button>
+        <button id="resetBtn" class="control-btn secondary-btn" title="초기화">초기화 🔄</button>
+      </div>
+
+      <!-- Session Tracker -->
+      <div class="session-tracker">
+        <span class="tracker-label">오늘 완료한 세션:</span>
+        <div class="tomato-icons" id="tomatoIcons"></div>
+        <span class="session-count" id="sessionCountText">0개</span>
+      </div>
+    </main>
+
+    <!-- Task List Section -->
+    <section class="tasks-section">
+      <div class="section-header">
+        <h3>📋 오늘의 할 일</h3>
+        <span id="taskStats" class="task-stats">0/0 완료</span>
+      </div>
+      
+      <form id="taskForm" class="task-form">
+        <input type="text" id="taskInput" placeholder="새로운 집중 목표나 할 일을 입력하세요..." autocomplete="off" required>
+        <button type="submit" class="add-task-btn">추가</button>
+      </form>
+
+      <ul id="taskList" class="task-list">
+        <!-- Tasks will be rendered here -->
+      </ul>
+    </section>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>타이머 설정</h3>
+        <button id="closeSettingsBtn" class="close-btn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="setting-group">
+          <h4>시간 설정 (분 단위)</h4>
+          <div class="time-inputs-grid">
+            <div class="input-item">
+              <label for="pomodoroTimeInput">집중 시간</label>
+              <input type="number" id="pomodoroTimeInput" min="1" max="120" value="25">
+            </div>
+            <div class="input-item">
+              <label for="shortBreakTimeInput">짧은 휴식</label>
+              <input type="number" id="shortBreakTimeInput" min="1" max="60" value="5">
+            </div>
+            <div class="input-item">
+              <label for="longBreakTimeInput">긴 휴식</label>
+              <input type="number" id="longBreakTimeInput" min="1" max="60" value="15">
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <h4>세션 옵션</h4>
+          <div class="setting-toggle">
+            <span>긴 휴식 간격 (세션 수)</span>
+            <input type="number" id="longBreakIntervalInput" min="1" max="10" value="4" style="width: 60px;">
+          </div>
+          <label class="setting-checkbox-label">
+            <input type="checkbox" id="autoStartBreaks">
+            <span>집중 완료 시 휴식 자동 시작</span>
+          </label>
+          <label class="setting-checkbox-label">
+            <input type="checkbox" id="autoStartPomodoros">
+            <span>휴식 완료 시 집중 세션 자동 시작</span>
+          </label>
+        </div>
+
+        <div class="setting-group">
+          <h4>소리 및 알림</h4>
+          <label class="setting-checkbox-label">
+            <input type="checkbox" id="soundEnabled" checked>
+            <span>세션 종료 알람음 재생</span>
+          </label>
+          <label class="setting-checkbox-label">
+            <input type="checkbox" id="tickSoundEnabled">
+            <span>초침(틱-톡) 소리 켜기</span>
+          </label>
+          <div class="setting-toggle">
+            <span>알람 볼륨</span>
+            <input type="range" id="soundVolume" min="0" max="100" value="70">
+          </div>
+          <button id="testSoundBtn" class="btn-outline">🔊 알람음 테스트</button>
+          <div style="margin-top: 10px;">
+            <button id="requestNotifBtn" class="btn-outline">🔔 브라우저 알림 권한 허용</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="saveSettingsBtn" class="primary-btn full-width">설정 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
